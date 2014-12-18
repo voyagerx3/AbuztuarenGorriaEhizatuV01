@@ -15,6 +15,8 @@ class Juego: SKScene {
     var prisma = SKSpriteNode()
     var avion = SKSpriteNode()
     var bomba = SKSpriteNode()
+    var isla = SKSpriteNode()
+    var suelomar = SKNode()
     var moverArriba = SKAction()
     var moverAbajo = SKAction()
     var moverIzq=SKAction()
@@ -32,8 +34,9 @@ class Juego: SKScene {
         backgroundColor = UIColor.cyanColor()
         heroe()
         malo()
-        //bombas()
         //prismaticos()
+        home()
+        suelomares()
         crearEscenario()
     }
     
@@ -41,12 +44,12 @@ class Juego: SKScene {
     
     
     func heroe() {
-        submarino = SKSpriteNode(imageNamed: "UBoat")
+        submarino = SKSpriteNode(imageNamed: "yellowsub")
 //        submarino.xScale = 1
 //        submarino.yScale = 1
-        submarino.setScale(0.6)
+        submarino.setScale(0.1)
         submarino.zPosition = 1   
-        submarino.position = CGPointMake(80, 200)
+        submarino.position = CGPointMake(500, 50)
         submarino.name = "heroe"
         addChild(submarino)
         moverArriba = SKAction.moveByX(0, y: 20, duration: 0.2)
@@ -73,6 +76,25 @@ class Juego: SKScene {
         addChild(bomba)
         moverIzq=SKAction.moveByX(-20, y:0, duration: 0.2)
         moverDer=SKAction.moveByX(20, y:0, duration: 0.2)
+    }
+    
+    func suelomares(){
+    suelomar.position=CGPointMake(0, 25)
+    suelomar.zPosition=3
+    suelomar.physicsBody=SKPhysicsBody(rectangleOfSize: CGSizeMake(self.anchoScreen,50))
+    suelomar.physicsBody?.dynamic=false
+    suelomar.name="suelomares"
+    addChild(suelomar)
+        
+    }
+    func home(){
+        isla = SKSpriteNode(imageNamed: "isla")
+        isla.setScale(0.2)
+        isla.zPosition = 3
+        isla.position = CGPointMake(20, 45)
+        isla.name = "home"
+        addChild(isla)
+
     }
     
     
@@ -127,6 +149,8 @@ class Juego: SKScene {
     }
     
     func crearEscenario() {
+        
+        
          for var indice = 0; indice < 2; ++indice {
             let fondo = SKSpriteNode(imageNamed: "mar4")
             fondo.position = CGPoint(x: indice * Int(fondo.size.width), y: 0)
