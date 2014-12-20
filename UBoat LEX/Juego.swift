@@ -94,6 +94,7 @@ class Juego: SKScene, SKPhysicsContactDelegate{
         bomba.name="bombas"
         bomba.physicsBody=SKPhysicsBody(circleOfRadius: bomba.size.height/2)
         bomba.physicsBody?.dynamic = true
+        bomba.physicsBody?.affectedByGravity=false
         bomba.physicsBody?.categoryBitMask=categoriabomba
         bomba.physicsBody?.collisionBitMask=categoriasubmarino|categoriasuelomar
         bomba.physicsBody?.contactTestBitMask=categoriasubmarino|categoriasuelomar
@@ -280,8 +281,26 @@ class Juego: SKScene, SKPhysicsContactDelegate{
         
     }
     func   didBeginContact(contact: SKPhysicsContact) {
-        labelestado("contacto...")
-        println("toyaqui")
+        
+        let node1:SKNode = contact.bodyA.node!;
+        let node2:SKNode = contact.bodyB.node!;
+        labelestado("contacto..." + " entre " + node1.name! + " y  " + node2.name! )
+        
+        if ( node1.name=="malo" && node2.name=="bombas")
+        {labelestado(    node1.name! + " y  " + node2.name! + " Bomba VA!!" )}
+        
+        if ( node1.name=="suelomares" && node2.name=="bombas")
+        {labelestado(    node1.name! + " y  " + node2.name! + " Explosión" )}
+        
+        if ( node1.name=="heroe" && node2.name=="bombas")
+        {labelestado(    node1.name! + " y  " + node2.name! + " Winner" )}
+        
+        if ( node1.name=="heroe" && node2.name=="home")
+        {labelestado(    node1.name! + " y  " + node2.name! + " .... Loser" )}
+        
+        println(node1.name)
+        println(node2.name)
+       
     }
     
     
