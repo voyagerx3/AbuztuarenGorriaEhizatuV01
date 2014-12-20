@@ -9,7 +9,7 @@
 import SpriteKit
 
 
-class Juego: SKScene {
+class Juego: SKScene, SKPhysicsContactDelegate{
     
     var submarino = SKSpriteNode()
     
@@ -29,10 +29,17 @@ class Juego: SKScene {
     
     let velocidadFondo: CGFloat = 2
     let anchoScreen: CGFloat = UIScreen.mainScreen().bounds.width
+    //constantes colisiones
+    let categoriasubmarino:UInt32=1<<0
+    let categoriasuelo:UInt32=1<<1
+    let categoriahome:UInt32=2<<2
+    
    
 
     override func didMoveToView(view: SKView) {
         backgroundColor = UIColor.cyanColor()
+        //detectar colisiones
+        self.physicsWorld.contactDelegate=self
         heroe()
         malo()
         //prismaticos()
@@ -62,7 +69,9 @@ class Juego: SKScene {
         avion.position=CGPointMake(120,300)
         avion.name="malo"
         avion.physicsBody=SKPhysicsBody(circleOfRadius: avion.size.height/2)
-        avion.physicsBody?.dynamic=false
+        avion.physicsBody?.affectedByGravity=false
+        avion.physicsBody?.dynamic=true
+        avion.physicsBody?.allowsRotation=false
         addChild(avion)
         
         moverIzq=SKAction.moveByX(-20, y:0, duration: 0.2)
@@ -103,6 +112,13 @@ class Juego: SKScene {
         isla.position = CGPointMake(20, 45)
         isla.name = "home"
         isla.physicsBody=SKPhysicsBody(circleOfRadius: isla.size.height/2)
+        isla.physicsBody?.affectedByGravity=false
+        isla.physicsBody?.dynamic=true
+        isla.physicsBody?.allowsRotation=false
+        isla.physicsBody?.mass=10000
+        isla.physicsBody?.restitution=0
+        
+        
         addChild(isla)
 
     }
