@@ -26,13 +26,15 @@ class Juego: SKScene, SKPhysicsContactDelegate{
     var tocaAvion:Bool = false
     var naveTocada:String = ""
     
-    
+    let label = SKLabelNode(fontNamed: "Avenir")
     let velocidadFondo: CGFloat = 2
     let anchoScreen: CGFloat = UIScreen.mainScreen().bounds.width
     //constantes colisiones
     let categoriasubmarino:UInt32=1<<0
-    let categoriasuelo:UInt32=1<<1
-    let categoriahome:UInt32=2<<2
+    let categoriabomba:UInt32=1<<1
+    let categoriaavion:UInt32=1<<2
+    let categoriasuelomar:UInt32=1<<3
+    let categoriahome:UInt32=1<<4
     
    
 
@@ -45,6 +47,7 @@ class Juego: SKScene, SKPhysicsContactDelegate{
         //prismaticos()
         home()
         suelomares()
+        activarlabel()
         crearEscenario()
     }
 
@@ -55,8 +58,13 @@ class Juego: SKScene, SKPhysicsContactDelegate{
         submarino.position = CGPointMake(500, 50)
         submarino.name = "heroe"
         submarino.physicsBody=SKPhysicsBody(circleOfRadius: submarino.size.height/2)
-        avion.physicsBody?.dynamic=false
-
+        
+        submarino.physicsBody?.dynamic=true
+        submarino.physicsBody?.affectedByGravity=false
+        submarino.physicsBody?.allowsRotation=false
+        submarino.physicsBody?.categoryBitMask=categoriasubmarino
+        submarino.physicsBody?.collisionBitMask=categoriahome
+        submarino.physicsBody?.contactTestBitMask=categoriahome
         addChild(submarino)
         moverArriba = SKAction.moveByX(0, y: 20, duration: 0.2)
         moverAbajo = SKAction.moveByX(0, y: -20, duration: 0.2)
@@ -86,6 +94,9 @@ class Juego: SKScene, SKPhysicsContactDelegate{
         bomba.name="bombas"
         bomba.physicsBody=SKPhysicsBody(circleOfRadius: bomba.size.height/2)
         bomba.physicsBody?.dynamic = true
+        bomba.physicsBody?.categoryBitMask=categoriabomba
+        bomba.physicsBody?.collisionBitMask=categoriasubmarino|categoriasuelomar
+        bomba.physicsBody?.contactTestBitMask=categoriasubmarino|categoriasuelomar
         addChild(bomba)
         moverIzq=SKAction.moveByX(-20, y:0, duration: 0.2)
         moverDer=SKAction.moveByX(20, y:0, duration: 0.2)
@@ -94,22 +105,21 @@ class Juego: SKScene, SKPhysicsContactDelegate{
     func suelomares(){
         let sizesuelomarl  = CGSize(width: anchoScreen * 1.2, height: 20)
         
-    suelomar.position=CGPointMake(0 + sizesuelomarl.width * 0.5, 30 - sizesuelomarl.height * 0.5)
-    suelomar.zPosition=3
-    suelomar.physicsBody=SKPhysicsBody(rectangleOfSize: sizesuelomarl)
-    suelomar.physicsBody?.dynamic=false
-   
-    println("\(anchoScreen)")
-    println("\(sizesuelomarl.width * 0.5)")
-    suelomar.name="suelomares"
-    addChild(suelomar)
+        suelomar.position=CGPointMake(0 + sizesuelomarl.width * 0.5, 30 - sizesuelomarl.height * 0.5)
+        suelomar.zPosition=3
+        suelomar.physicsBody=SKPhysicsBody(rectangleOfSize: sizesuelomarl)
+        suelomar.physicsBody?.dynamic=false
+        suelomar.physicsBody?.categoryBitMask=categoriasuelomar
+        println("\(sizesuelomarl.width * 0.5)")
+        suelomar.name="suelomares"
+        addChild(suelomar)
         
     }
     func home(){
         isla = SKSpriteNode(imageNamed: "isla")
         isla.setScale(0.2)
         isla.zPosition = 5
-        isla.position = CGPointMake(20, 45)
+        isla.position = CGPointMake(20, 50)
         isla.name = "home"
         isla.physicsBody=SKPhysicsBody(circleOfRadius: isla.size.height/2)
         isla.physicsBody?.affectedByGravity=false
@@ -117,12 +127,20 @@ class Juego: SKScene, SKPhysicsContactDelegate{
         isla.physicsBody?.allowsRotation=false
         isla.physicsBody?.mass=10000
         isla.physicsBody?.restitution=0
-        
+        isla.physicsBody?.categoryBitMask=categoriahome
         
         addChild(isla)
 
     }
-    
+    func   activarlabel(){
+        label.fontColor = UIColor.blackColor()
+        label.fontSize = 30
+        label.text=""
+        label.position = CGPoint(x: size.width / 2 - 50, y: size.height / 2)
+        label.zPosition=6
+        label.name = "labelestado"
+        addChild(label)
+    }
     
     override func touchesBegan(touches: NSSet, withEvent event: UIEvent) {
         
@@ -224,7 +242,7 @@ class Juego: SKScene, SKPhysicsContactDelegate{
         self.enumerateChildNodesWithName("heroe", usingBlock: { (nodo, stop) -> Void in
             if let yellowsub = nodo as? SKSpriteNode {
                 yellowsub.position = CGPoint(
-                    x: yellowsub.position.x - self.velocidadFondo * 0.5,
+                    x: yellowsub.position.x - self.velocidadFondo ,
                     y: yellowsub.position.y)
                 
                 if (yellowsub.position.x  >  (self.anchoScreen+yellowsub.size.width/3)) {
@@ -249,6 +267,10 @@ class Juego: SKScene, SKPhysicsContactDelegate{
             }
         })
     }
+   
+    func labelestado(texto:String) {
+         label.text = texto
+    }
     
     override func update(currentTime: NSTimeInterval) {
         //scrollHorizontal()
@@ -256,6 +278,10 @@ class Juego: SKScene, SKPhysicsContactDelegate{
         vuelosubmarino()
         vuelobomba()
         
+    }
+    func   didBeginContact(contact: SKPhysicsContact) {
+        labelestado("contacto...")
+        println("toyaqui")
     }
     
     

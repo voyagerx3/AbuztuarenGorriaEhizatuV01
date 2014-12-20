@@ -44,18 +44,14 @@ class Menu: SKScene {
     
     
     func llamada() {
-     
+    
         let label = SKLabelNode(fontNamed: "Avenir")
-        
         label.text = "Jugar"
         label.fontColor = UIColor.blackColor()
         label.fontSize = 30
-        
-        
         label.position = CGPoint(x: size.width / 2 - 50, y: size.height / 2)
         label.name = "Cambiar"
         addChild(label)
-        
 
     }
     
