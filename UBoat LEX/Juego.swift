@@ -10,8 +10,9 @@ import SpriteKit
 
 
 class Juego: SKScene {
-
+    
     var submarino = SKSpriteNode()
+    
     var prisma = SKSpriteNode()
     var avion = SKSpriteNode()
     var bomba = SKSpriteNode()
@@ -22,9 +23,9 @@ class Juego: SKScene {
     var moverIzq=SKAction()
     var moverDer=SKAction()
     var volarPlano = SKAction()
-    
     var tocaAvion:Bool = false
     var naveTocada:String = ""
+    
     
     let velocidadFondo: CGFloat = 2
     let anchoScreen: CGFloat = UIScreen.mainScreen().bounds.width
@@ -39,18 +40,16 @@ class Juego: SKScene {
         suelomares()
         crearEscenario()
     }
-    
-    
-    
-    
+
     func heroe() {
         submarino = SKSpriteNode(imageNamed: "yellowsub")
-//        submarino.xScale = 1
-//        submarino.yScale = 1
         submarino.setScale(0.1)
         submarino.zPosition = 1   
         submarino.position = CGPointMake(500, 50)
         submarino.name = "heroe"
+        submarino.physicsBody=SKPhysicsBody(circleOfRadius: submarino.size.height/2)
+        avion.physicsBody?.dynamic=false
+
         addChild(submarino)
         moverArriba = SKAction.moveByX(0, y: 20, duration: 0.2)
         moverAbajo = SKAction.moveByX(0, y: -20, duration: 0.2)
@@ -59,10 +58,13 @@ class Juego: SKScene {
     func malo(){
         avion = SKSpriteNode(imageNamed: "avion")
         avion.setScale(0.25)
-        avion.zPosition=3
+        avion.zPosition=2
         avion.position=CGPointMake(120,300)
         avion.name="malo"
+        avion.physicsBody=SKPhysicsBody(circleOfRadius: avion.size.height/2)
+        avion.physicsBody?.dynamic=false
         addChild(avion)
+        
         moverIzq=SKAction.moveByX(-20, y:0, duration: 0.2)
         moverDer=SKAction.moveByX(20, y:0, duration: 0.2)  
     }
@@ -73,16 +75,23 @@ class Juego: SKScene {
         bomba.zPosition=3
         bomba.position=CGPointMake(x,y)
         bomba.name="bombas"
+        bomba.physicsBody=SKPhysicsBody(circleOfRadius: bomba.size.height/2)
+        bomba.physicsBody?.dynamic = true
         addChild(bomba)
         moverIzq=SKAction.moveByX(-20, y:0, duration: 0.2)
         moverDer=SKAction.moveByX(20, y:0, duration: 0.2)
     }
     
     func suelomares(){
-    suelomar.position=CGPointMake(0, 25)
+        let sizesuelomarl  = CGSize(width: anchoScreen * 1.2, height: 20)
+        
+    suelomar.position=CGPointMake(0 + sizesuelomarl.width * 0.5, 30 - sizesuelomarl.height * 0.5)
     suelomar.zPosition=3
-    suelomar.physicsBody=SKPhysicsBody(rectangleOfSize: CGSizeMake(self.anchoScreen,50))
+    suelomar.physicsBody=SKPhysicsBody(rectangleOfSize: sizesuelomarl)
     suelomar.physicsBody?.dynamic=false
+   
+    println("\(anchoScreen)")
+    println("\(sizesuelomarl.width * 0.5)")
     suelomar.name="suelomares"
     addChild(suelomar)
         
@@ -90,9 +99,10 @@ class Juego: SKScene {
     func home(){
         isla = SKSpriteNode(imageNamed: "isla")
         isla.setScale(0.2)
-        isla.zPosition = 3
+        isla.zPosition = 5
         isla.position = CGPointMake(20, 45)
         isla.name = "home"
+        isla.physicsBody=SKPhysicsBody(circleOfRadius: isla.size.height/2)
         addChild(isla)
 
     }
@@ -149,8 +159,6 @@ class Juego: SKScene {
     }
     
     func crearEscenario() {
-        
-        
          for var indice = 0; indice < 2; ++indice {
             let fondo = SKSpriteNode(imageNamed: "mar4")
             fondo.position = CGPoint(x: indice * Int(fondo.size.width), y: 0)
@@ -196,15 +204,25 @@ class Juego: SKScene {
             }
         })
     }
+    func vuelosubmarino() {
+        self.enumerateChildNodesWithName("heroe", usingBlock: { (nodo, stop) -> Void in
+            if let yellowsub = nodo as? SKSpriteNode {
+                yellowsub.position = CGPoint(
+                    x: yellowsub.position.x - self.velocidadFondo * 0.5,
+                    y: yellowsub.position.y)
+                
+                if (yellowsub.position.x  >  (self.anchoScreen+yellowsub.size.width/3)) {
+                    yellowsub.position = CGPointMake(-5,yellowsub.position.y)
+                }
+            }
+        })
+    }
     
     func vuelobomba(){
         var jump = SKAction.rotateToAngle(CGFloat(-3.14/2), duration: NSTimeInterval(0.5))
         self.enumerateChildNodesWithName("bombas", usingBlock: { (nodo, stop) -> Void in
             if let bomba = nodo as? SKSpriteNode {
                 bomba.runAction(jump)
-                bomba.physicsBody=SKPhysicsBody(circleOfRadius: bomba.size.height/2)
-               
-                
                 bomba.position = CGPoint(
                     x: bomba.position.x + self.velocidadFondo/3,
                     y: bomba.position.y - self.velocidadFondo/6)
@@ -219,7 +237,9 @@ class Juego: SKScene {
     override func update(currentTime: NSTimeInterval) {
         //scrollHorizontal()
         vuelohorizontal()
+        vuelosubmarino()
         vuelobomba()
+        
     }
     
     
