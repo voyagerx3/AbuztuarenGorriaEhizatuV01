@@ -11,13 +11,15 @@ import SpriteKit
 
 class Juego: SKScene, SKPhysicsContactDelegate{
     
-    var submarino = SKSpriteNode()
     
+    var submarino = SKSpriteNode()
     var prisma = SKSpriteNode()
     var avion = SKSpriteNode()
+    var helice = SKSpriteNode()
     var bomba = SKSpriteNode()
     var isla = SKSpriteNode()
     var suelomar = SKNode()
+    var fondomenu=SKSpriteNode()
     var moverArriba = SKAction()
     var moverAbajo = SKAction()
     var moverIzq=SKAction()
@@ -26,9 +28,15 @@ class Juego: SKScene, SKPhysicsContactDelegate{
     var tocaAvion:Bool = false
     var naveTocada:String = ""
     
+    var explosion: SKSpriteNode!
+    var explosionAtlas = SKTextureAtlas(named: "explosion")
+    var explosionFrames = [SKTexture]()
+    var colaavion:NSString!
+    var escape: SKEmitterNode!
     let label = SKLabelNode(fontNamed: "Avenir")
     let velocidadFondo: CGFloat = 2
     let anchoScreen: CGFloat = UIScreen.mainScreen().bounds.width
+    let altoScreen: CGFloat = UIScreen.mainScreen().bounds.height
     //constantes colisiones
     let categoriasubmarino:UInt32=1<<0
     let categoriabomba:UInt32=1<<1
@@ -50,15 +58,27 @@ class Juego: SKScene, SKPhysicsContactDelegate{
         activarlabel()
         crearEscenario()
     }
-
+    func fondomenux()
+    {
+        fondomenu.size.width=anchoScreen
+        fondomenu.size.height=altoScreen*0.10
+        fondomenu.position=CGPointMake(0,altoScreen*0.9)
+        fondomenu.color=UIColor.whiteColor()
+        fondomenu.zPosition=4
+         
+        addChild(fondomenu)
+        
+        
+    }
+    
+    
     func heroe() {
         submarino = SKSpriteNode(imageNamed: "yellowsub")
         submarino.setScale(0.1)
         submarino.zPosition = 1   
-        submarino.position = CGPointMake(500, 50)
+        submarino.position = CGPointMake(anchoScreen - submarino.size.width, 50)
         submarino.name = "heroe"
         submarino.physicsBody=SKPhysicsBody(circleOfRadius: submarino.size.height/2)
-        
         submarino.physicsBody?.dynamic=true
         submarino.physicsBody?.affectedByGravity=false
         submarino.physicsBody?.allowsRotation=false
@@ -66,24 +86,46 @@ class Juego: SKScene, SKPhysicsContactDelegate{
         submarino.physicsBody?.collisionBitMask=categoriahome
         submarino.physicsBody?.contactTestBitMask=categoriahome
         addChild(submarino)
-        moverArriba = SKAction.moveByX(0, y: 20, duration: 0.2)
-        moverAbajo = SKAction.moveByX(0, y: -20, duration: 0.2)
+        //moverArriba = SKAction.moveByX(0, y: 20, duration: 0.2)
+        //moverAbajo = SKAction.moveByX(0, y: -20, duration: 0.2)
     }
     
     func malo(){
+        var texturahelicetop:SKTexture=SKTexture(imageNamed: "heliceTop")
+        var texturahelicebot:SKTexture=SKTexture(imageNamed: "heliceBot")
+        var spin:SKAction = SKAction.animateWithTextures([texturahelicetop,texturahelicebot], timePerFrame: 0.1)
+        var spin8:SKAction = SKAction.repeatActionForever(spin)
         avion = SKSpriteNode(imageNamed: "avion")
         avion.setScale(0.25)
         avion.zPosition=2
-        avion.position=CGPointMake(120,300)
+        avion.position=CGPointMake(120,altoScreen*0.9)
         avion.name="malo"
         avion.physicsBody=SKPhysicsBody(circleOfRadius: avion.size.height/2)
         avion.physicsBody?.affectedByGravity=false
-        avion.physicsBody?.dynamic=true
+        avion.physicsBody?.dynamic=false
         avion.physicsBody?.allowsRotation=false
         addChild(avion)
+        helice = SKSpriteNode(imageNamed: "heliceTop")
+        helice.setScale(0.25)
+        helice.position = CGPointMake(avion.frame.origin.x+avion.size.width/2,avion.frame.origin.y+avion.size.height+5)
+        helice.zPosition=2
+        helice.runAction(spin8)
+        helice.name="malohelice"
+        addChild(helice)
         
-        moverIzq=SKAction.moveByX(-20, y:0, duration: 0.2)
-        moverDer=SKAction.moveByX(20, y:0, duration: 0.2)  
+        let untypedEmitter : AnyObject = NSKeyedUnarchiver.unarchiveObjectWithFile(NSBundle.mainBundle().pathForResource("escapeParticle", ofType: "sks")!)!
+         escape = untypedEmitter as SKEmitterNode
+
+        
+        
+//        colaavion=NSBundle.mainBundle().pathForResource("escapeParticle",ofType: "sks")
+//        //escape = NSKeyedUnarchiver.unarchiveObjectWithFile(colaavion) as SKSpriteNode
+//        escape = NSKeyedUnarchiver.unarchiveObjectWithFile(NSBundle.mainBundle().pathForResource("escapeParticle", ofType: "sks")!) as SKSpriteNode
+        escape.zPosition=1.9
+        escape.position = CGPointMake(avion.frame.origin.x-avion.size.width/2,avion.frame.origin.y+avion.size.height+5)
+        escape.name="maloescape"
+        addChild(escape)
+        
     }
  //&x: CGFloat, &y: CGFloat
     func bombas(x:CGFloat,y:CGFloat){
@@ -143,6 +185,36 @@ class Juego: SKScene, SKPhysicsContactDelegate{
         addChild(label)
     }
     
+    func setupExplosion( x:CGFloat,y:CGFloat )
+    {//explosionAtlas   birdAtlas
+        
+        var nombreTextura = [NSArray].self
+ 
+        var totalImgs = explosionAtlas.textureNames.count
+        
+        for var x = 1; x < totalImgs; x++
+        {
+            var textureName = "explosion-\(x)"
+            var texture = explosionAtlas.textureNamed(textureName)
+            explosionFrames.append(texture)
+            
+        }
+        explosion=SKSpriteNode(texture: explosionFrames[0])
+        
+        explosion.position=CGPointMake(x,y)
+        
+        addChild(explosion)
+
+        explosion.runAction(SKAction.repeatActionForever(SKAction.animateWithTextures(explosionFrames, timePerFrame: 0.4, resize: false, restore: false)))
+        
+        //explosion.runAction(SKAction.repeatAction(SKAction.animateWithTextures(explosionFrames, timePerFrame: 0.2), count: 2))
+        explosion.runAction(SKAction.playSoundFileNamed("explosionbomba.wav", waitForCompletion: false))
+        explosion.runAction(SKAction.removeFromParent())
+        
+        
+    }
+    
+    
     override func touchesBegan(touches: NSSet, withEvent event: UIEvent) {
         
         
@@ -150,18 +222,16 @@ class Juego: SKScene, SKPhysicsContactDelegate{
             
             let dondeTocamos = toke.locationInNode(self)
             let spriteTocado = self.nodeAtPoint(dondeTocamos)
-            
-            
-            if dondeTocamos.x > avion.position.x {
-            if avion.position.x < 750 {
-                    avion.runAction(moverIzq)
-                }
-            } else {
-                
-                if avion.position.x > 50 {
-                    avion.runAction(moverDer)
-                }
-            }
+//            if dondeTocamos.x > avion.position.x {
+//            if avion.position.x < 750 {
+//                    avion.runAction(moverIzq)
+//                }
+//            } else {
+//                
+//                if avion.position.x > 50 {
+//                    avion.runAction(moverDer)
+//                }
+//            }
             // Recuperamos el nodo que haya en el punto tocado
             if (spriteTocado.name != nil && (spriteTocado is SKSpriteNode)) {
                 tocaAvion = true
@@ -172,6 +242,7 @@ class Juego: SKScene, SKPhysicsContactDelegate{
                 {
                     bombas(avion.position.x,y: avion.position.y)
                     vuelobomba()
+                    //heroe()
                 }
                 // Guardamos el valor del nombre de la nave tocada
             }
@@ -238,12 +309,39 @@ class Juego: SKScene, SKPhysicsContactDelegate{
                 }
             }
         })
+  //////
+        self.enumerateChildNodesWithName("malohelice", usingBlock: { (nodo, stop) -> Void in
+            if let malohelice = nodo as? SKSpriteNode {
+                malohelice.position = CGPoint(
+                    x: self.avion.position.x + self.velocidadFondo + self.avion.size.width/2-4,
+                    y: self.avion.position.y-2)
+                
+                if (malohelice.position.x  >  (self.anchoScreen+self.avion.size.width/3)) {
+                    self.avion.position = CGPointMake(-5,self.avion.position.y)
+                }
+            }
+        })
+   ///////
+        self.enumerateChildNodesWithName("maloescape", usingBlock: { (nodo, stop) -> Void in
+            if let maloescape = nodo as? SKEmitterNode {
+                maloescape.position = CGPoint(
+                    x: self.avion.position.x + self.velocidadFondo + self.avion.size.width/2-4,
+                    y: self.avion.position.y-2)
+                
+                if (maloescape.position.x  >  (self.anchoScreen+self.avion.size.width/3)) {
+                    self.avion.position = CGPointMake(-5,self.avion.position.y)
+                }
+            }
+        })
+        
+        
+        
     }
     func vuelosubmarino() {
         self.enumerateChildNodesWithName("heroe", usingBlock: { (nodo, stop) -> Void in
             if let yellowsub = nodo as? SKSpriteNode {
                 yellowsub.position = CGPoint(
-                    x: yellowsub.position.x - self.velocidadFondo ,
+                    x: yellowsub.position.x - self.velocidadFondo * 0.4,
                     y: yellowsub.position.y)
                 
                 if (yellowsub.position.x  >  (self.anchoScreen+yellowsub.size.width/3)) {
@@ -259,12 +357,9 @@ class Juego: SKScene, SKPhysicsContactDelegate{
             if let bomba = nodo as? SKSpriteNode {
                 bomba.runAction(jump)
                 bomba.position = CGPoint(
-                    x: bomba.position.x + self.velocidadFondo/3,
-                    y: bomba.position.y - self.velocidadFondo/6)
-                
-                if (bomba.position.x  >  (self.anchoScreen+bomba.size.width/3)) {
-                    bomba.position = CGPointMake(-5,bomba.position.y)
-                }
+                    x: bomba.position.x + self.velocidadFondo * 0.8,
+                    y: bomba.position.y - self.velocidadFondo)
+
             }
         })
     }
@@ -290,13 +385,26 @@ class Juego: SKScene, SKPhysicsContactDelegate{
         {labelestado(    node1.name! + " y  " + node2.name! + " Bomba VA!!" )}
         
         if ( node1.name=="suelomares" && node2.name=="bombas")
-        {labelestado(    node1.name! + " y  " + node2.name! + " Explosión" )}
+        {labelestado( node1.name! + " y  " + node2.name! + " Explosión" )
+            
+        bomba.removeFromParent()
+        setupExplosion(bomba.position.x,y: bomba.position.y)
+        //explosion.removeFromParent()
+        }
         
         if ( node1.name=="heroe" && node2.name=="bombas")
-        {labelestado(    node1.name! + " y  " + node2.name! + " Winner" )}
+        {labelestado(node1.name! + " y  " + node2.name! + " Winner" )
+            submarino.removeFromParent()
+            bomba.removeFromParent()
+            setupExplosion(bomba.position.x,y: bomba.position.y)
+            
+            
+        }
         
         if ( node1.name=="heroe" && node2.name=="home")
-        {labelestado(    node1.name! + " y  " + node2.name! + " .... Loser" )}
+        {labelestado(    node1.name! + " y  " + node2.name! + " ....Loser" )
+        submarino.removeFromParent()
+        }
         
         println(node1.name)
         println(node2.name)
