@@ -13,17 +13,18 @@ class Juego: SKScene, SKPhysicsContactDelegate{
     
     
     var submarino = SKSpriteNode()
+    var fragata = SKSpriteNode()
     var prisma = SKSpriteNode()
     var avion = SKSpriteNode()
     var helice = SKSpriteNode()
     var bomba = SKSpriteNode()
     var isla = SKSpriteNode()
     var suelomar = SKNode()
-    var fondomenu=SKSpriteNode()
+    var fondomenu = SKSpriteNode()
     var moverArriba = SKAction()
     var moverAbajo = SKAction()
-    var moverIzq=SKAction()
-    var moverDer=SKAction()
+    var moverIzq = SKAction()
+    var moverDer = SKAction()
     var volarPlano = SKAction()
     var tocaAvion:Bool = false
     var naveTocada:String = ""
@@ -34,6 +35,13 @@ class Juego: SKScene, SKPhysicsContactDelegate{
     var colaavion:NSString!
     var escape: SKEmitterNode!
     let label = SKLabelNode(fontNamed: "Avenir")
+    let labelvidas=SKLabelNode(fontNamed: "Avenir")
+    var labelvidasval=SKLabelNode(fontNamed: "Avenir")
+    var vidasval:Int=3
+    let labelpuntos=SKLabelNode(fontNamed: "Avenir")
+    var labelpuntosval=SKLabelNode(fontNamed: "Avenir")
+    var puntosval:Int=0
+    var labelmuniciones=SKLabelNode(fontNamed: "Avenir")
     let velocidadFondo: CGFloat = 2
     let anchoScreen: CGFloat = UIScreen.mainScreen().bounds.width
     let altoScreen: CGFloat = UIScreen.mainScreen().bounds.height
@@ -43,41 +51,71 @@ class Juego: SKScene, SKPhysicsContactDelegate{
     let categoriaavion:UInt32=1<<2
     let categoriasuelomar:UInt32=1<<3
     let categoriahome:UInt32=1<<4
-    
+    let categoriafragata:UInt32=1<<5
    
 
     override func didMoveToView(view: SKView) {
         backgroundColor = UIColor.cyanColor()
         //detectar colisiones
         self.physicsWorld.contactDelegate=self
-        heroe()
+        heroe01()
+                heroe02()
         malo()
         //prismaticos()
         home()
         suelomares()
+        fondomenux()
         activarlabel()
         crearEscenario()
     }
     func fondomenux()
     {
+       // fondomenu=SKSpriteNode(imageNamed: "mar5")
         fondomenu.size.width=anchoScreen
-        fondomenu.size.height=altoScreen*0.10
-        fondomenu.position=CGPointMake(0,altoScreen*0.9)
+        fondomenu.size.height=altoScreen*0.06
+        fondomenu.position=CGPointMake(0+fondomenu.size.width/2,altoScreen-fondomenu.size.height/2)
         fondomenu.color=UIColor.whiteColor()
-        fondomenu.zPosition=4
-         
+        fondomenu.zPosition=6
         addChild(fondomenu)
         
+        labelvidas.fontColor = UIColor.blackColor()
+        labelvidas.fontSize = altoScreen*0.04
+        labelvidas.text="Vidas:"
+        labelvidas.position = CGPoint(x: fondomenu.size.width*0.10,y: altoScreen-altoScreen*0.04)
+        labelvidas.zPosition=6
+        addChild(labelvidas)
         
+        labelvidasval.fontColor = UIColor.blackColor()
+        labelvidasval.fontSize = altoScreen*0.04
+        labelvidasval.text=String(vidasval)
+        labelvidasval.position = CGPoint(x: fondomenu.size.width*0.15,y: altoScreen-altoScreen*0.04)
+        labelvidasval.zPosition=6
+        labelvidasval.name = "labelvidasval"
+        addChild(labelvidasval)
+        
+        labelpuntos.fontColor = UIColor.blackColor()
+        labelpuntos.fontSize = altoScreen*0.04
+        labelpuntos.text="Puntos:"
+        labelpuntos.position = CGPoint(x: fondomenu.size.width*0.30,y: altoScreen-altoScreen*0.04)
+        labelpuntos.zPosition=6
+        addChild(labelpuntos)
+
+        labelpuntosval.fontColor = UIColor.blackColor()
+        labelpuntosval.fontSize = altoScreen*0.04
+        labelpuntosval.text=""
+        labelpuntosval.position = CGPoint(x: fondomenu.size.width*0.40,y: altoScreen-altoScreen*0.04)
+        labelpuntosval.zPosition=6
+        labelpuntosval.name = "labelpuntosval"
+        addChild(labelpuntosval)
     }
     
     
-    func heroe() {
+    func heroe01() {
         submarino = SKSpriteNode(imageNamed: "yellowsub")
         submarino.setScale(0.1)
         submarino.zPosition = 1   
         submarino.position = CGPointMake(anchoScreen - submarino.size.width, 50)
-        submarino.name = "heroe"
+        submarino.name = "heroe01"
         submarino.physicsBody=SKPhysicsBody(circleOfRadius: submarino.size.height/2)
         submarino.physicsBody?.dynamic=true
         submarino.physicsBody?.affectedByGravity=false
@@ -86,8 +124,22 @@ class Juego: SKScene, SKPhysicsContactDelegate{
         submarino.physicsBody?.collisionBitMask=categoriahome
         submarino.physicsBody?.contactTestBitMask=categoriahome
         addChild(submarino)
-        //moverArriba = SKAction.moveByX(0, y: 20, duration: 0.2)
-        //moverAbajo = SKAction.moveByX(0, y: -20, duration: 0.2)
+    }
+
+    func heroe02() {
+        fragata = SKSpriteNode(imageNamed: "enemigo")
+        fragata.setScale(0.2)
+        fragata.zPosition = 1
+        fragata.position = CGPointMake(anchoScreen - fragata.size.width, 50)
+        fragata.name = "heroe02"
+        fragata.physicsBody=SKPhysicsBody(circleOfRadius: fragata.size.height/2)
+        fragata.physicsBody?.dynamic=true
+        fragata.physicsBody?.affectedByGravity=false
+        fragata.physicsBody?.allowsRotation=false
+        fragata.physicsBody?.categoryBitMask=categoriafragata
+        fragata.physicsBody?.collisionBitMask=categoriahome
+        fragata.physicsBody?.contactTestBitMask=categoriahome
+        addChild(fragata)
     }
     
     func malo(){
@@ -138,8 +190,8 @@ class Juego: SKScene, SKPhysicsContactDelegate{
         bomba.physicsBody?.dynamic = true
         bomba.physicsBody?.affectedByGravity=false
         bomba.physicsBody?.categoryBitMask=categoriabomba
-        bomba.physicsBody?.collisionBitMask=categoriasubmarino|categoriasuelomar
-        bomba.physicsBody?.contactTestBitMask=categoriasubmarino|categoriasuelomar
+        bomba.physicsBody?.collisionBitMask=categoriasubmarino|categoriasuelomar|categoriafragata
+        bomba.physicsBody?.contactTestBitMask=categoriasubmarino|categoriasuelomar|categoriafragata
         addChild(bomba)
         moverIzq=SKAction.moveByX(-20, y:0, duration: 0.2)
         moverDer=SKAction.moveByX(20, y:0, duration: 0.2)
@@ -338,7 +390,7 @@ class Juego: SKScene, SKPhysicsContactDelegate{
         
     }
     func vuelosubmarino() {
-        self.enumerateChildNodesWithName("heroe", usingBlock: { (nodo, stop) -> Void in
+        self.enumerateChildNodesWithName("heroe01", usingBlock: { (nodo, stop) -> Void in
             if let yellowsub = nodo as? SKSpriteNode {
                 yellowsub.position = CGPoint(
                     x: yellowsub.position.x - self.velocidadFondo * 0.4,
@@ -392,18 +444,31 @@ class Juego: SKScene, SKPhysicsContactDelegate{
         //explosion.removeFromParent()
         }
         
-        if ( node1.name=="heroe" && node2.name=="bombas")
+        if ( node1.name=="heroe01" && node2.name=="bombas")
         {labelestado(node1.name! + " y  " + node2.name! + " Winner" )
             submarino.removeFromParent()
             bomba.removeFromParent()
             setupExplosion(bomba.position.x,y: bomba.position.y)
-            
-            
+            puntosval=puntosval+100
+            labelpuntosval.text=String(puntosval)
+        }
+        if ( node1.name=="heroe02" && node2.name=="bombas")
+        {labelestado(node1.name! + " y  " + node2.name! + " Winner" )
+            fragata.removeFromParent()
+            bomba.removeFromParent()
+            setupExplosion(bomba.position.x,y: bomba.position.y)
+            puntosval=puntosval+50
+            labelpuntosval.text=String(puntosval)
         }
         
-        if ( node1.name=="heroe" && node2.name=="home")
+        
+        if ( node1.name=="heroe01" && node2.name=="home")
         {labelestado(    node1.name! + " y  " + node2.name! + " ....Loser" )
-        submarino.removeFromParent()
+            vidasval--
+            labelvidasval.text=String(vidasval)
+            puntosval=puntosval-10
+            labelpuntosval.text=String(puntosval)
+            submarino.removeFromParent()
         }
         
         println(node1.name)
