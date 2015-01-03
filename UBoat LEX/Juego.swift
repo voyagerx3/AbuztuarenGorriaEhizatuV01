@@ -28,7 +28,7 @@ class Juego: SKScene, SKPhysicsContactDelegate{
     var volarPlano = SKAction()
     var tocaAvion:Bool = false
     var naveTocada:String = ""
-    
+    var volverhome:SKSpriteNode!
     var explosion: SKSpriteNode!
     var explosionAtlas = SKTextureAtlas(named: "explosion")
     var explosionFrames = [SKTexture]()
@@ -59,7 +59,7 @@ class Juego: SKScene, SKPhysicsContactDelegate{
         //detectar colisiones
         self.physicsWorld.contactDelegate=self
         heroe01()
-                heroe02()
+        heroe02()
         malo()
         //prismaticos()
         home()
@@ -70,6 +70,13 @@ class Juego: SKScene, SKPhysicsContactDelegate{
     }
     func fondomenux()
     {
+        volverhome=SKSpriteNode(imageNamed: "home-icon")
+        volverhome.setScale(0.05)
+        volverhome.position=CGPoint(x: anchoScreen-volverhome.size.width*2,y: altoScreen-volverhome.size.height/1.5)
+        
+        volverhome.name="volverhome"
+        volverhome.zPosition=7
+        addChild(volverhome)
        // fondomenu=SKSpriteNode(imageNamed: "mar5")
         fondomenu.size.width=anchoScreen
         fondomenu.size.height=altoScreen*0.06
@@ -290,12 +297,24 @@ class Juego: SKScene, SKPhysicsContactDelegate{
                 // Encendemos el semáforo
                 naveTocada = spriteTocado.name!
                 NSLog(naveTocada)
+                if (naveTocada == "volverhome")
+                {
+                    let transicion = SKTransition.revealWithDirection(SKTransitionDirection.Left, duration: 0.5)
+                    
+                    let  aparecerEscena = Menu(size: self.size)
+                    
+                    aparecerEscena.scaleMode = SKSceneScaleMode.AspectFill
+                    
+                    self.scene?.view?.presentScene(aparecerEscena, transition: transicion)
+                }
+                
                 if (naveTocada == "malo")
                 {
                     bombas(avion.position.x,y: avion.position.y)
                     vuelobomba()
                     //heroe()
                 }
+                
                 // Guardamos el valor del nombre de la nave tocada
             }
             
